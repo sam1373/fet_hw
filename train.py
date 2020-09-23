@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from transformers import get_linear_schedule_with_warmup
+#from transformers import get_linear_schedule_with_warmup
 
 from sklearn.metrics import f1_score, accuracy_score
 
@@ -25,12 +25,12 @@ def print_result(rst, vocab, mention_ids):
 
 gpu = True
 
-batch_size = 1000
+batch_size = 5000
 # Because FET datasets are usually large (1m+ sentences), it is infeasible to 
 # load the whole dataset into memory. We read the dataset in a streaming way.
 buffer_size = 1000 * 2000
 
-eval_steps = 500
+eval_steps = 200
 
 #train_file = '/home/samuel/Downloads/hw2.data/en.train.json'
 train_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.train.ds.json'
@@ -39,10 +39,10 @@ dev_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.
 #test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
 test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
 
-#embed_file = 'enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
-embed_file = '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
+embed_file = 'enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
+#embed_file = '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
 
-embed_dim = 100
+embed_dim = 200
 hidden_dim = 128
 char_embed_dim = 64
 embed_dropout = 0.3
@@ -177,14 +177,14 @@ for epoch in range(max_epoch):
                 dev_results['id'].extend(mention_ids)
 
 
-            # precision, recall, fscore = calculate_macro_fscore(dev_results['gold'],
-            #                                                dev_results['pred'])
+            precision, recall, f1macro = calculate_macro_fscore(dev_results['gold'],
+                                                            dev_results['pred'])
 
             f1micro = f1_score(dev_results['gold'], dev_results['pred'], average='micro')
-            f1macro = f1_score(dev_results['gold'], dev_results['pred'], average='macro')
+            #f1macro = f1_score(dev_results['gold'], dev_results['pred'], average='macro')
             acc = accuracy_score(dev_results['gold'], dev_results['pred'])
 
-            print('Dev Micro-F1 {:.2f} Macro-F1 {:.2f} Accuracy {:.2f}'.format(
+            print('Dev Micro-F1 {:.4f} Macro-F1 {:.4f} Accuracy {:.4f}'.format(
                 f1micro, f1macro, acc))
 
             writer.add_scalar('dev_f1_micro', f1micro, global_step)
@@ -247,14 +247,17 @@ for epoch in range(max_epoch):
 
             f.close()
 
+            precision, recall, f1macro = calculate_macro_fscore(test_results['gold'],
+                                                            test_results['pred'])
+
             f1micro = f1_score(test_results['gold'], test_results['pred'], average='micro')
-            f1macro = f1_score(test_results['gold'], test_results['pred'], average='macro')
+            #f1macro = f1_score(test_results['gold'], test_results['pred'], average='macro')
             acc = accuracy_score(test_results['gold'], test_results['pred'])
 
             if best_dev:
                 print("Test score for best dev:")
 
-            print('Test Micro-F1 {:.2f} Macro-F1 {:.2f} Accuracy {:.2f}'.format(
+            print('Test Micro-F1 {:.4f} Macro-F1 {:.4f} Accuracy {:.4f}'.format(
                 f1micro, f1macro, acc))
 
         global_step += 1
