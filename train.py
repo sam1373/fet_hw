@@ -42,7 +42,7 @@ test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.tes
 #embed_file = 'enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
 embed_file = '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
 
-embed_dim = 200
+embed_dim = 100
 hidden_dim = 128
 char_embed_dim = 64
 embed_dropout = 0.3
