@@ -39,9 +39,9 @@ dev_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.
 #test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
 test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
 
-embed_file = '/home/samuel/Downloads/enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
-#embed_file = '/home/samuel/Downloads/glove.840B.300d.txt'
-# '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
+#embed_file = 'enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
+embed_file = '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
+
 embed_dim = 200
 hidden_dim = 128
 char_embed_dim = 64
