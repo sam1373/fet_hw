@@ -187,4 +187,3 @@ class FetDataset(object):
                 batch_mention_ids, batch_mentions,
                 batch_seq_lens, batch_mention_chars, batch_mention_char_lens)
 
-            

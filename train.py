@@ -32,12 +32,12 @@ buffer_size = 1000 * 2000
 
 eval_steps = 500
 
-train_file = '/home/samuel/Downloads/hw2.data/en.train.json'
-# /shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.train.ds.json'
-dev_file = '/home/samuel/Downloads/hw2.data/en.dev.json'
-# '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.ds.json'
-test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
-# '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
+#train_file = '/home/samuel/Downloads/hw2.data/en.train.json'
+train_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.train.ds.json'
+#dev_file = '/home/samuel/Downloads/hw2.data/en.dev.json'
+dev_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.ds.json'
+#test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
+test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
 
 embed_file = '/home/samuel/Downloads/enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
 #embed_file = '/home/samuel/Downloads/glove.840B.300d.txt'
@@ -49,7 +49,7 @@ embed_dropout = 0.3
 lstm_dropout = 0.3
 
 lr = 1e-3
-weight_decay = 1e-4
+weight_decay = 1e-3
 max_epoch = 100
 
 # Datasets
