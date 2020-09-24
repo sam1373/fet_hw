@@ -4,7 +4,8 @@ from data import FetDataset
 from model import LstmFet
 from util import (load_word_embed,
                   get_label_vocab,
-                  calculate_macro_fscore)
+                  calculate_macro_fscore,
+                  CosineAnnealingWarmUpRestarts)
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -25,19 +26,23 @@ def print_result(rst, vocab, mention_ids):
 
 gpu = True
 
-batch_size = 5000
+batch_size = 2000
 # Because FET datasets are usually large (1m+ sentences), it is infeasible to 
 # load the whole dataset into memory. We read the dataset in a streaming way.
 buffer_size = 1000 * 2000
 
 eval_steps = 200
 
-#train_file = '/home/samuel/Downloads/hw2.data/en.train.json'
-train_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.train.ds.json'
-#dev_file = '/home/samuel/Downloads/hw2.data/en.dev.json'
-dev_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.ds.json'
-#test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
-test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
+local = False
+
+if local:
+    train_file = '/home/samuel/Downloads/hw2.data/en.train.json'
+    dev_file = '/home/samuel/Downloads/hw2.data/en.dev.json'
+    test_file = '/home/samuel/Downloads/hw2.data/en.test.json'
+else:
+    train_file = 'en.train.ds.json'
+    dev_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.dev.ds.json'
+    test_file = '/shared/nas/data/m1/yinglin8/projects/fet/data/aida_2020/hw2/en.test.ds.json'
 
 embed_file = 'enwiki.skip.size200.win10.neg15.sample1e-5.min15.txt'
 #embed_file = '/shared/nas/data/m1/yinglin8/embedding/enwiki.cbow.100d.case.txt'
@@ -66,8 +71,8 @@ word_embed, word_vocab = load_word_embed(embed_file,
                                          embed_dim,
                                          skip_first=True)
 
-# Scan the whole dateset to get the label set. This step may take a long 
-# time. You can save the label vocab to avoid scanning the dataset 
+# Scan the whole dateset to get the label set. This step may take a long
+# time. You can save the label vocab to avoid scanning the dataset
 # repeatedly.
 print('Collect fine-grained entity labels')
 label_vocab = get_label_vocab(dev_file, test_file)
@@ -88,11 +93,13 @@ optimizer = torch.optim.AdamW(filter(lambda x: x.requires_grad,
                               lr=lr,
                               weight_decay=weight_decay)
 
+
+schedule = CosineAnnealingWarmUpRestarts(optimizer, T_0=50, T_mult=2, eta_max=1e-3, T_up=10)
 #schedule = get_linear_schedule_with_warmup(optimizer,
 #                                           num_warmup_steps=5000,
-#                                           num_training_steps=100000)
+#                                           num_training_steps=60000)
 
-schedule = ReduceLROnPlateau(optimizer, 'max', patience=5, cooldown=3, verbose=True, threshold=0.001)
+#schedule = ReduceLROnPlateau(optimizer, 'max', patience=5, cooldown=3, verbose=True, threshold=0.001)
 
 writer = SummaryWriter()
 
@@ -145,6 +152,7 @@ for epoch in range(max_epoch):
 
         loss.backward()
         optimizer.step()
+        #schedule.step()
 
         lr = optimizer.param_groups[0]['lr']
         writer.add_scalar('epoch', epoch, global_step)
@@ -180,6 +188,8 @@ for epoch in range(max_epoch):
             precision, recall, f1macro = calculate_macro_fscore(dev_results['gold'],
                                                             dev_results['pred'])
 
+            f1macro /= 100.
+
             f1micro = f1_score(dev_results['gold'], dev_results['pred'], average='micro')
             #f1macro = f1_score(dev_results['gold'], dev_results['pred'], average='macro')
             acc = accuracy_score(dev_results['gold'], dev_results['pred'])
@@ -191,7 +201,7 @@ for epoch in range(max_epoch):
             writer.add_scalar('dev_f1_macro', f1macro, global_step)
             writer.add_scalar('dev_acc', acc, global_step)
 
-            schedule.step(f1micro)
+            schedule.step()
 
             if f1micro > best_dev_score:
                 best_dev_score = f1micro
@@ -249,6 +259,8 @@ for epoch in range(max_epoch):
 
             precision, recall, f1macro = calculate_macro_fscore(test_results['gold'],
                                                             test_results['pred'])
+
+            f1macro /= 100.
 
             f1micro = f1_score(test_results['gold'], test_results['pred'], average='micro')
             #f1macro = f1_score(test_results['gold'], test_results['pred'], average='macro')
